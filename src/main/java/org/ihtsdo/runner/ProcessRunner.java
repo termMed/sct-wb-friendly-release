@@ -112,8 +112,14 @@ public class ProcessRunner {
 		partOfRelationshipsPatch();
 		copyToOutput();
 		replaceDate();
+		removeTmps();
 	}
 	
+	private void removeTmps() {
+		FileHelper.removeFolderTree(sortedFolder);
+		FileHelper.removeFolderTree(workingFolder);
+	}
+
 	/**
 	 * Copy to output.
 	 *
@@ -217,7 +223,7 @@ public class ProcessRunner {
 	 */
 	private void retiredConceptInferredIsas() throws IOException, Exception{
 		logger.info("Starting generation of isas relationship of retired concept on inferred view.");
-		String file=FileHelper.getFile(new File(config.getPreviousFriendlyReleaseFolder()), "rf2-relationships", null, "isas", "stated");
+		String file=FileHelper.getFile(new File(config.getPreviousFriendlyReleaseFolder()), "rf2-relationships", null, "retiredisa", "stated");
 		
 		File RF2SortedFile= new File(sortedFolder,new File( file).getName());
 		FileSorter sf=new FileSorter(new File(file),RF2SortedFile,workingFolder,new int[]{0,1});
@@ -237,7 +243,7 @@ public class ProcessRunner {
 		sf=new FileSorter(filteredFile,RF1SortedFile,workingFolder,new int[]{0});
 		sf.execute();
 		sf=null;
-		outputRetiredCptIsasFile=new File(outputFolder,"sct2_RetiredConceptIsasRelationships_INT_" + config.getReleaseDate() + ".txt" );
+		outputRetiredCptIsasFile=new File(outputFolder,"res2_RetiredIsaRelationship_Full_INT_" + config.getReleaseDate() + ".txt" );
 		
 		File deltaFinalFile=new File(extraFolder,"delta_" + outputRetiredCptIsasFile.getName());
 		File snapshotFinalFile=new File(extraFolder,"snap_" + outputRetiredCptIsasFile.getName());
@@ -264,7 +270,7 @@ public class ProcessRunner {
 	 */
 	private void retiredConceptStatedIsas() throws IOException, Exception{
 		logger.info("Starting generation of isas relationship of retired concept on stated view.");
-		String file=FileHelper.getFile(new File(config.getPreviousFriendlyReleaseFolder()), "rf2-relationships", null, "isasstated", null );
+		String file=FileHelper.getFile(new File(config.getPreviousFriendlyReleaseFolder()), "rf2-relationships", null, "retiredstatedisa", null );
 		
 		File RF2SortedFile= new File(sortedFolder,new File( file).getName());
 		FileSorter sf=new FileSorter(new File(file),RF2SortedFile,workingFolder,new int[]{0,1});
@@ -286,7 +292,7 @@ public class ProcessRunner {
 		sf.execute();
 		sf=null;
 		
-		outputRetiredCptStatedIsasFile=new File(outputFolder,"sct2_RetiredConceptIsasStatedRelationships_INT_" + config.getReleaseDate() + ".txt" );
+		outputRetiredCptStatedIsasFile=new File(outputFolder,"res2_RetiredStatedIsaRelationship_Full_INT_" + config.getReleaseDate() + ".txt" );
 		
 		File deltaFinalFile=new File(extraFolder,"delta_" + outputRetiredCptStatedIsasFile.getName());
 		File snapshotFinalFile=new File(extraFolder,"snap_" + outputRetiredCptStatedIsasFile.getName());
@@ -352,7 +358,7 @@ public class ProcessRunner {
 		sf.execute();
 		sf=null;
 		
-		historicalOutputFile=new File(outputFolder,"sct2_HistoricalRelationships_INT_" + config.getReleaseDate() + ".txt" );
+		historicalOutputFile=new File(outputFolder,"sct2_RelationshipHistorical_Full_INT_" + config.getReleaseDate() + ".txt" );
 		
 		File deltaFinalFile=new File(extraFolder,"delta_" + historicalOutputFile.getName());
 		File snapshotFinalFile=new File(extraFolder,"snap_" + historicalOutputFile.getName());

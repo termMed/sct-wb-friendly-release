@@ -28,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.util.TreeSet;
 
 import org.ihtsdo.configuration.MetadataConfig;
+import org.ihtsdo.util.FileHelper;
 
 
 /**
@@ -241,6 +242,7 @@ public class PatchRF2RetiredISA_PartOfConceptRetired {
 			}
 			RF2File.renameTo(newRetStatedIsasRels);
 
+			FileHelper.removeFolderTree(tmp);
 			System.gc();
 			end1 = System.currentTimeMillis();
 			elapsed1 = (end1 - start1);

@@ -246,8 +246,8 @@ public class ConsolidateRelsSnapshotAndDelta  {
 		sb.append("\t");
 		sb.append(typeId);
 		sb.append("\t");
-		bw.append("900000000000451002");
-		bw.append("\r\n");
+		sb.append("900000000000451002");
+		sb.append("\r\n");
 		
 		String tmp=sb.toString();
 		bw.append(tmp);
