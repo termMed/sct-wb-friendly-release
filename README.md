@@ -12,4 +12,4 @@ configuration file.
 java -jar sct2-friendly-release-transform-0.0.1.jar config/Parameters.xml
 `
 
-You can download a binary package from the releases section of this project.
+You can download a binary package from the [releases section](https://github.com/termMed/sct2-friendly-release/releases) of this project.
