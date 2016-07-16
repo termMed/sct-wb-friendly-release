@@ -19,10 +19,13 @@ package org.ihtsdo.runner;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.configuration.Parameters;
@@ -110,11 +113,110 @@ public class ProcessRunner {
 		retiredConceptInferredIsas();
 		retiredConceptStatedIsas();
 		partOfRelationshipsPatch();
+		identifiers();
 		copyToOutput();
 		replaceDate();
 		removeTmps();
 	}
 	
+	private void identifiers() throws IOException, Exception {
+		logger.info("Starting generation of identifier files.");
+		
+		File outputResIdentFile=new File(outputFolder,"res2_Identifier_Snapshot_INT_" + config.getReleaseDate() + ".txt" );
+		
+		BufferedWriter bw = FileHelper.getWriter(outputResIdentFile);
+		String file=FileHelper.getFile(new File(config.getPreviousFriendlyReleaseFolder()), "rf2-identifier", null, "res2_", null);
+
+		HashSet<Long> idMaps=new HashSet<Long>();
+		
+		getPreviousIdentifiers(bw, file, idMaps);
+		
+		addNewIdentifiers(bw, idMaps, historicalOutputFile);
+		
+		bw.close();
+		
+		File outputSctIdentFile=new File(outputFolder,"sct2_Identifier_Full_INT_" + config.getReleaseDate() + ".txt" );
+		
+		bw = FileHelper.getWriter(outputSctIdentFile);
+		file=FileHelper.getFile(new File(config.getPreviousFriendlyReleaseFolder()), "rf2-identifier", null, "sct2_", null);
+
+		idMaps=new HashSet<Long>();
+
+		getPreviousIdentifiers(bw, file, idMaps);
+		
+		String conceptFile =FileHelper.getFile(new File(config.getRf2ReleaseFullFolder()), "rf2-concepts", null, null, null);
+
+		if (conceptFile!=null){
+			addNewIdentifiers(bw, idMaps, new File(conceptFile));
+		}
+		
+		String descriptionFile =FileHelper.getFile(new File(config.getRf2ReleaseFullFolder()), "rf2-descriptions", null, null, null);
+
+		if (descriptionFile!=null){
+			addNewIdentifiers(bw, idMaps, new File(descriptionFile));
+		}
+
+		String statedRels =FileHelper.getFile(new File(config.getRf2ReleaseFullFolder()), "rf2-relationships", null, "stated", null);
+
+		if (statedRels!=null){
+			addNewIdentifiers(bw, idMaps, new File(statedRels));
+		}
+		
+		String textDefin =FileHelper.getFile(new File(config.getRf2ReleaseFullFolder()), "rf2-textDefinition", null, null, null);
+
+		if (textDefin!=null){
+			addNewIdentifiers(bw, idMaps, new File(textDefin));
+		}
+		bw.close();
+		logger.info("End of generation of identifier files.");
+		
+	}
+
+	private void getPreviousIdentifiers(BufferedWriter bw, String file, HashSet<Long> idMaps)
+			throws UnsupportedEncodingException, FileNotFoundException, IOException, NumberFormatException {
+		BufferedReader br=FileHelper.getReader(file);
+		String header=br.readLine();
+		bw.append(header);
+		bw.append("\r\n");
+		String line;
+		String[] spl;
+		while ((line=br.readLine())!=null){
+			spl=line.split("\t",-1);
+			idMaps.add(Long.parseLong(spl[5]));
+			bw.append(line);
+			bw.append("\r\n");
+		}
+		br.close();
+	}
+
+	private void addNewIdentifiers(BufferedWriter bw, HashSet<Long> idMaps, File origin)
+			throws FileNotFoundException, UnsupportedEncodingException, IOException, NumberFormatException {
+		BufferedReader br;
+		String line;
+		String[] spl;
+		br=FileHelper.getReader(origin);
+		br.readLine();
+		while ((line=br.readLine())!=null){
+			spl=line.split("\t",-1);
+			if (!idMaps.contains(Long.parseLong(spl[0]))){
+				bw.append(I_Constants.IDENTIFIER_SCHEME_ID);
+				bw.append("\t");
+				bw.append(UUID.randomUUID().toString());
+				bw.append("\t");
+				bw.append(config.getFriendlyReleaseDate());
+				bw.append("\t");
+				bw.append("1");
+				bw.append("\t");
+				bw.append(I_Constants.CORE_MODULE_ID);
+				bw.append("\t");
+				bw.append(spl[0]);
+				bw.append("\r\n");
+				idMaps.add(Long.parseLong(spl[0]));
+			}
+		}
+		br.close();
+	}
+
 	private void removeTmps() {
 		FileHelper.removeFolderTree(sortedFolder);
 		FileHelper.removeFolderTree(workingFolder);
@@ -134,7 +236,8 @@ public class ProcessRunner {
 		FileHelper.findAllFiles(dir, files,null,null);	
 		for(String sfile :files){
 			File file=new File(sfile);
-			if (!file.getName().toLowerCase().contains("_relationship_")){
+			if (!file.getName().toLowerCase().contains("_relationship_") &&
+					!file.getName().toLowerCase().contains("_identifier") ){
 				count++;
 				FileHelper.copyTo(file, new File(outputFolder,file.getName()));
 			}
